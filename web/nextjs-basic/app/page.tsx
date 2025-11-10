@@ -51,7 +51,9 @@ export default function VoiceAgent() {
 
     try {
       // Use WebSocket URL from environment variable
-      const wsUrl = process.env.REALTIME_WS_URL;
+      const wsUrl = process.env.NEXT_PUBLIC_REALTIME_WS_URL;
+      console.log(process.env.NEXT_PUBLIC_REALTIME_WS_URL);
+      console.log(process.env.NEXT_PUBLIC_REALTIME_API_KEY)
 
       const agent = new RealtimeAgent({
         name: 'Assistant',
@@ -92,7 +94,7 @@ export default function VoiceAgent() {
       });
 
       await newSession.connect({
-        apiKey: process.env.REALTIME_API_KEY || "",
+        apiKey: process.env.NEXT_PUBLIC_REALTIME_API_KEY || "",
       });
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });

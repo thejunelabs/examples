@@ -191,10 +191,8 @@ class NoUIDemo:
             # Attach playback tracker and enable server‑side interruptions + auto response.
 
             model_config: RealtimeModelConfig = {
-                "url": "ws://localhost:8001/v1/realtime",
-                "headers": {
-                    "custom-auth": "june_RBTYRnNP9AmSGBTYgdlkfgnfExJ0sCr3l07ux0WQ35E"
-                },
+                "url": os.environ.get("REALTIME_WS_URL"),
+                "headers": {"custom-auth": os.environ.get("REALTIME_API_KEY")},
                 "playback_tracker": self.playback_tracker,
                 "initial_model_settings": {
                     "model_name": "june-realtime",
@@ -344,6 +342,7 @@ class NoUIDemo:
 
 
 if __name__ == "__main__":
+    load_dotenv()
     demo = NoUIDemo()
     try:
         asyncio.run(demo.run())

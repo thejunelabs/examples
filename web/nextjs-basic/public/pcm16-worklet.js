@@ -1,16 +1,53 @@
 class PCM16Worklet extends AudioWorkletProcessor {
-    constructor() {
-        super();
+    constructor(options) {
+        super(options);
         this.buffer = [];
-        this.targetSamples = 960; // 40ms at 24kHz
+
+        const { inputSampleRate, targetSampleRate } = options.processorOptions;
+
+        this.inputSampleRate = inputSampleRate;
+        this.targetSampleRate = targetSampleRate;
+        this.targetSamples = 960;
+
+        this.resampleRatio = this.inputSampleRate / this.targetSampleRate;
+
+        this.resampleIndex = 0;
     }
+
+    resample(input) {
+        const output = [];
+        const sourceLength = input.length;
+
+        while (this.resampleIndex < sourceLength) {
+            const index0 = Math.floor(this.resampleIndex);
+            const index1 = index0 + 1;
+
+            const weight1 = this.resampleIndex - index0;
+            const weight0 = 1.0 - weight1;
+
+            const sample0 = input[index0];
+            const sample1 = (index1 < sourceLength) ? input[index1] : input[index0];
+
+            const resampledValue = (sample0 * weight0) + (sample1 * weight1);
+
+            output.push(resampledValue);
+
+            this.resampleIndex += this.resampleRatio;
+        }
+        this.resampleIndex %= 1.0;
+
+        return output;
+    }
+    // ----------------------------------------
 
     process(inputs) {
         const input = inputs[0][0];
         if (!input) return true;
 
-        for (let i = 0; i < input.length; i++) {
-            const s = Math.max(-1, Math.min(1, input[i]));
+        const resampledAudio = this.resample(input);
+
+        for (let i = 0; i < resampledAudio.length; i++) {
+            const s = Math.max(-1, Math.min(1, resampledAudio[i]));
             this.buffer.push(s * 32767);
         }
 
